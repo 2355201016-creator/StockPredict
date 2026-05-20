@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Stock Predict</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Chart JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <style>
+
+        *{
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body{
+            background: linear-gradient(135deg,#eef2ff,#f8fafc);
+            min-height: 100vh;
+        }
+
+        .navbar-custom{
+            background: white;
+            padding: 18px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .logo{
+            font-size: 28px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .main-card{
+            background: white;
+            border-radius: 25px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .info-card{
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            transition: 0.3s;
+        }
+
+        .info-card:hover{
+            transform: translateY(-5px);
+        }
+
+        .info-title{
+            color: gray;
+            font-size: 18px;
+        }
+
+        .info-value{
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .chart-card{
+            background: white;
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .btn-predict{
+            background: linear-gradient(135deg,#2563eb,#4f46e5);
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 15px;
+        }
+
+        .btn-predict:hover{
+            opacity: 0.9;
+        }
+
+        .form-control,
+        .form-select{
+            height: 55px;
+            border-radius: 12px;
+        }
+
+        canvas{
+            height: 500px !important;
+        }
+
+        .footer{
+            text-align: center;
+            margin-top: 30px;
+            color: gray;
+            font-size: 14px;
+            padding-bottom: 30px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-custom">
+
+    <div class="container">
+
+        <div class="logo">
+            📈 STOCK PREDICT
+        </div>
+
+    </div>
+
+</nav>
+
+<div class="container mt-5">
+
+    <!-- HEADER -->
+    <div class="text-center mb-5">
+
+        <h1 class="fw-bold">
+            AI Stock Prediction Dashboard
+        </h1>
+
+        <p class="text-muted">
+            Prediksi harga saham menggunakan Artificial Intelligence
+        </p>
+
+    </div>
+
+    <!-- FORM -->
+    <div class="main-card">
+
+        <div class="row g-4">
+
+            <!-- SAHAM -->
+            <div class="col-md-4">
+
+                <label class="mb-2">
+                    Pilih Saham
+                </label>
+
+                <select id="symbol"
+                        class="form-select">
+
+                    <option value="BBCA.JK">
+                        BBCA - Bank Central Asia
+                    </option>
+
+                    <option value="BBRI.JK">
+                        BBRI - Bank Rakyat Indonesia
+                    </option>
+
+                    <option value="BMRI.JK">
+                        BMRI - Bank Mandiri
+                    </option>
+
+                    <option value="BBNI.JK">
+                        BBNI - Bank Negara Indonesia
+                    </option>
+
+                    <option value="TLKM.JK">
+                        TLKM - Telkom Indonesia
+                    </option>
+
+                    <option value="ASII.JK">
+                        ASII - Astra International
+                    </option>
+
+                    <option value="ICBP.JK">
+                        ICBP - Indofood CBP
+                    </option>
+
+                    <option value="INDF.JK">
+                        INDF - Indofood Sukses Makmur
+                    </option>
+
+                    <option value="UNVR.JK">
+                        UNVR - Unilever Indonesia
+                    </option>
+
+                    <option value="GOTO.JK">
+                        GOTO - GoTo Gojek Tokopedia
+                    </option>
+
+                    <option value="ANTM.JK">
+                        ANTM - Aneka Tambang
+                    </option>
+
+                    <option value="MDKA.JK">
+                        MDKA - Merdeka Copper Gold
+                    </option>
+
+                    <option value="ADRO.JK">
+                        ADRO - Adaro Energy
+                    </option>
+
+                    <option value="PTBA.JK">
+                        PTBA - Bukit Asam
+                    </option>
+
+                    <option value="CPIN.JK">
+                        CPIN - Charoen Pokphand
+                    </option>
+
+                    <option value="JPFA.JK">
+                        JPFA - Japfa Comfeed
+                    </option>
+
+                    <option value="SMGR.JK">
+                        SMGR - Semen Indonesia
+                    </option>
+
+                    <option value="WSKT.JK">
+                        WSKT - Waskita Karya
+                    </option>
+
+                    <option value="EXCL.JK">
+                        EXCL - XL Axiata
+                    </option>
+
+                    <option value="ERAA.JK">
+                        ERAA - Erajaya Swasembada
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- START DATE -->
+            <div class="col-md-4">
+
+                <label class="mb-2">
+                    Tanggal Mulai
+                </label>
+
+                <input type="date"
+                       id="start"
+                       class="form-control">
+
+            </div>
+
+            <!-- END DATE -->
+            <div class="col-md-4">
+
+                <label class="mb-2">
+                    Tanggal Akhir
+                </label>
+
+                <input type="date"
+                       id="end"
+                       class="form-control"
+                       readonly>
+
+            </div>
+
+        </div>
+
+        <button onclick="predict()"
+                class="btn btn-primary btn-predict w-100 mt-4">
+
+            🔍 Analisis & Prediksi Saham
+
+        </button>
+
+    </div>
+
+    <!-- INFO -->
+    <div class="row mt-5 g-4">
+
+        <!-- Harga -->
+        <div class="col-md-3">
+
+            <div class="info-card">
+
+                <div class="info-title">
+                    Harga Terakhir
+                </div>
+
+                <div class="info-value"
+                     id="lastPrice">
+
+                    -
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Trend -->
+        <div class="col-md-3">
+
+            <div class="info-card">
+
+                <div class="info-title">
+                    Trend
+                </div>
+
+                <div class="info-value"
+                     id="trend">
+
+                    -
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Recommendation -->
+        <div class="col-md-3">
+
+            <div class="info-card">
+
+                <div class="info-title">
+                    Recommendation
+                </div>
+
+                <div class="info-value"
+                     id="recommendation">
+
+                    -
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Confidence -->
+        <div class="col-md-3">
+
+            <div class="info-card">
+
+                <div class="info-title">
+                    AI Confidence
+                </div>
+
+                <div class="info-value"
+                     id="confidence">
+
+                    -
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- CHART -->
+    <div class="chart-card mt-5">
+
+        <h3 class="mb-4">
+            📊 Grafik Prediksi Saham
+        </h3>
+
+        <canvas id="chart"></canvas>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+
+        Data Source:
+        Yahoo Finance |
+
+        Machine Learning:
+        Random Forest Regressor |
+
+        Stock Predict © 2026
+
+    </div>
+
+</div>
+
+<script src="/static/script.js"></script>
+
+<script>
+
+    // otomatis isi tanggal hari ini
+    const today = new Date()
+        .toISOString()
+        .split('T')[0];
+
+    document.getElementById('end').value =
+        today;
+
+</script>
+
+</body>
+</html>
