@@ -2,7 +2,9 @@ import yfinance as yf
 from sklearn.ensemble import RandomForestRegressor
 
 
-
+# =========================
+# AMBIL DATA SAHAM
+# =========================
 def get_stock_data(symbol, start, end):
 
     data = yf.download(symbol, start=start, end=end)
@@ -19,7 +21,9 @@ def get_stock_data(symbol, start, end):
     return data
 
 
-
+# =========================
+# TRAINING MODEL AI
+# =========================
 def train_model(data):
 
     # Moving Average
@@ -50,6 +54,9 @@ def train_model(data):
     return model, data
 
 
+# =========================
+# PREDIKSI MASA DEPAN
+# =========================
 def predict_future(model, data, days=5):
 
     predictions = []

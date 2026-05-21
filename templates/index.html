@@ -18,7 +18,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
           rel="stylesheet">
 
     <style>
@@ -27,37 +27,134 @@
             font-family: 'Poppins', sans-serif;
         }
 
-        body{
-            background: linear-gradient(135deg,#eef2ff,#f8fafc);
+        body {
+            background: linear-gradient(135deg, #e0f2fe, #fdf2f8, #ecfeff);
             min-height: 100vh;
+            color: #0f172a;
+            transition: 0.3s;
         }
 
+        /* DARK MODE */
+        body.dark-mode{
+            background: linear-gradient(135deg, #0f172a, #111827, #1e293b);
+            color: white;
+        }
+
+        /* TOGGLE BUTTON */
+        .theme-toggle{
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 999;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 12px;
+            background: linear-gradient(135deg,#2563eb,#7c3aed);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        /* LIGHT MODE CARD */
+        .navbar-custom,
+        .main-card,
+        .chart-card,
+        .info-card{
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(10px);
+            color: #0f172a;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* DARK MODE CARD */
+        body.dark-mode .navbar-custom,
+        body.dark-mode .main-card,
+        body.dark-mode .chart-card,
+        body.dark-mode .info-card{
+            background: #111827;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        /* NAVBAR */
         .navbar-custom{
-            background: white;
             padding: 18px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
         }
 
+        /* LOGO */
         .logo{
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon{
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg,#2563eb,#7c3aed);
+            position: relative;
+        }
+
+        .logo-icon::before{
+            content: '';
+            position: absolute;
+            left: 8px;
+            bottom: 10px;
+            width: 22px;
+            height: 12px;
+            border-left: 3px solid white;
+            border-bottom: 3px solid white;
+            transform: skew(-30deg);
+        }
+
+        .logo-text{
             font-size: 28px;
-            font-weight: bold;
-            color: #2563eb;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #0f172a;
         }
 
+        body.dark-mode .logo-text{
+            color: white;
+        }
+
+        /* HEADER */
+        .dashboard-title{
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #0f172a;
+        }
+
+        body.dark-mode .dashboard-title{
+            color: white;
+        }
+
+        .dashboard-subtitle{
+            color: #64748b;
+            margin-top: 10px;
+        }
+
+        body.dark-mode .dashboard-subtitle{
+            color: #94a3b8;
+        }
+
+        /* MAIN CARD */
         .main-card{
-            background: white;
-            border-radius: 25px;
+            border-radius: 24px;
             padding: 35px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
         }
 
+        /* INFO CARD */
         .info-card{
-            background: white;
-            border-radius: 20px;
+            border-radius: 22px;
             padding: 30px;
-            text-align: center;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
             transition: 0.3s;
+            height: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
 
         .info-card:hover{
@@ -65,52 +162,121 @@
         }
 
         .info-title{
-            color: gray;
-            font-size: 18px;
+            color: #64748b;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        body.dark-mode .info-title{
+            color: #94a3b8;
         }
 
         .info-value{
-            font-size: 32px;
-            font-weight: bold;
-            margin-top: 10px;
+            font-size: 34px;
+            font-weight: 700;
+            margin-top: 12px;
         }
 
+        /* CHART */
         .chart-card{
-            background: white;
-            border-radius: 25px;
+            border-radius: 24px;
             padding: 30px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
         }
 
-        .btn-predict{
-            background: linear-gradient(135deg,#2563eb,#4f46e5);
-            border: none;
-            padding: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 15px;
+        .chart-title{
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 25px;
         }
 
-        .btn-predict:hover{
-            opacity: 0.9;
-        }
-
+        /* FORM */
         .form-control,
         .form-select{
             height: 55px;
-            border-radius: 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,0.08);
         }
 
+        body.dark-mode .form-control,
+        body.dark-mode .form-select{
+            background: #1e293b;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        body.dark-mode .form-select option{
+            background: #1e293b;
+            color: white;
+        }
+
+        label{
+            font-weight: 500;
+        }
+
+        body.dark-mode label{
+            color: #cbd5e1;
+        }
+
+        /* BUTTON */
+        .btn-predict{
+            background: linear-gradient(135deg,#2563eb,#7c3aed);
+            border: none;
+            padding: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            border-radius: 14px;
+        }
+
+        .btn-predict:hover{
+            opacity: 0.95;
+        }
+
+        /* CHART */
         canvas{
             height: 500px !important;
+            max-width: 100% !important;
         }
 
+        /* FOOTER */
         .footer{
             text-align: center;
-            margin-top: 30px;
-            color: gray;
+            margin-top: 40px;
+            color: #64748b;
             font-size: 14px;
             padding-bottom: 30px;
+        }
+
+        body.dark-mode .footer{
+            color: #94a3b8;
+        }
+
+        /* MOBILE */
+        @media (max-width: 768px){
+
+            .dashboard-title{
+                font-size: 28px;
+            }
+
+            .logo-text{
+                font-size: 22px;
+            }
+
+            .main-card,
+            .chart-card,
+            .info-card{
+                padding: 22px;
+            }
+
+            canvas{
+                height: 280px !important;
+            }
+
+            .info-value{
+                font-size: 24px;
+            }
+
         }
 
     </style>
@@ -119,13 +285,27 @@
 
 <body>
 
+<!-- TOGGLE -->
+<button class="theme-toggle"
+        onclick="toggleTheme()">
+
+    Toggle Theme
+
+</button>
+
 <!-- NAVBAR -->
 <nav class="navbar navbar-custom">
 
     <div class="container">
 
         <div class="logo">
-            📈 STOCK PREDICT
+
+            <div class="logo-icon"></div>
+
+            <div class="logo-text">
+                STOCK PREDICT
+            </div>
+
         </div>
 
     </div>
@@ -137,11 +317,11 @@
     <!-- HEADER -->
     <div class="text-center mb-5">
 
-        <h1 class="fw-bold">
+        <h1 class="dashboard-title">
             AI Stock Prediction Dashboard
         </h1>
 
-        <p class="text-muted">
+        <p class="dashboard-subtitle">
             Prediksi harga saham menggunakan Artificial Intelligence
         </p>
 
@@ -176,70 +356,6 @@
 
                     <option value="BBNI.JK">
                         BBNI - Bank Negara Indonesia
-                    </option>
-
-                    <option value="TLKM.JK">
-                        TLKM - Telkom Indonesia
-                    </option>
-
-                    <option value="ASII.JK">
-                        ASII - Astra International
-                    </option>
-
-                    <option value="ICBP.JK">
-                        ICBP - Indofood CBP
-                    </option>
-
-                    <option value="INDF.JK">
-                        INDF - Indofood Sukses Makmur
-                    </option>
-
-                    <option value="UNVR.JK">
-                        UNVR - Unilever Indonesia
-                    </option>
-
-                    <option value="GOTO.JK">
-                        GOTO - GoTo Gojek Tokopedia
-                    </option>
-
-                    <option value="ANTM.JK">
-                        ANTM - Aneka Tambang
-                    </option>
-
-                    <option value="MDKA.JK">
-                        MDKA - Merdeka Copper Gold
-                    </option>
-
-                    <option value="ADRO.JK">
-                        ADRO - Adaro Energy
-                    </option>
-
-                    <option value="PTBA.JK">
-                        PTBA - Bukit Asam
-                    </option>
-
-                    <option value="CPIN.JK">
-                        CPIN - Charoen Pokphand
-                    </option>
-
-                    <option value="JPFA.JK">
-                        JPFA - Japfa Comfeed
-                    </option>
-
-                    <option value="SMGR.JK">
-                        SMGR - Semen Indonesia
-                    </option>
-
-                    <option value="WSKT.JK">
-                        WSKT - Waskita Karya
-                    </option>
-
-                    <option value="EXCL.JK">
-                        EXCL - XL Axiata
-                    </option>
-
-                    <option value="ERAA.JK">
-                        ERAA - Erajaya Swasembada
                     </option>
 
                 </select>
@@ -278,7 +394,7 @@
         <button onclick="predict()"
                 class="btn btn-primary btn-predict w-100 mt-4">
 
-            🔍 Analisis & Prediksi Saham
+            Analisis & Prediksi Saham
 
         </button>
 
@@ -287,7 +403,6 @@
     <!-- INFO -->
     <div class="row mt-5 g-4">
 
-        <!-- Harga -->
         <div class="col-md-3">
 
             <div class="info-card">
@@ -307,7 +422,6 @@
 
         </div>
 
-        <!-- Trend -->
         <div class="col-md-3">
 
             <div class="info-card">
@@ -327,7 +441,6 @@
 
         </div>
 
-        <!-- Recommendation -->
         <div class="col-md-3">
 
             <div class="info-card">
@@ -347,7 +460,6 @@
 
         </div>
 
-        <!-- Confidence -->
         <div class="col-md-3">
 
             <div class="info-card">
@@ -372,8 +484,8 @@
     <!-- CHART -->
     <div class="chart-card mt-5">
 
-        <h3 class="mb-4">
-            📊 Grafik Prediksi Saham
+        <h3 class="chart-title">
+            Grafik Prediksi Saham
         </h3>
 
         <canvas id="chart"></canvas>
@@ -406,6 +518,24 @@
 
     document.getElementById('end').value =
         today;
+
+    // THEME TOGGLE
+    function toggleTheme(){
+
+        document.body.classList.toggle('dark-mode');
+
+        const currentTheme =
+            document.body.classList.contains('dark-mode')
+            ? 'dark'
+            : 'light';
+
+        localStorage.setItem('theme', currentTheme);
+    }
+
+    // LOAD THEME
+    if(localStorage.getItem('theme') === 'dark'){
+        document.body.classList.add('dark-mode');
+    }
 
 </script>
 
