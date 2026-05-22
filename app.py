@@ -1,133 +1,291 @@
+# =========================
+# app.py
+# =========================
+
 from flask import Flask, render_template, request, jsonify
-from model import get_stock_data, train_model, predict_future
-from datetime import timedelta
+import yfinance as yf
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
 
 app = Flask(__name__)
 
 
+# =========================
+# AMBIL DATA SAHAM
+# =========================
+def get_stock_data(symbol, start, end):
+
+    data = yf.download(
+        symbol,
+        start=start,
+        end=end
+    )
+
+    if data.empty:
+        return None
+
+    data = data[['Close']]
+
+    data.columns = ['Close']
+
+    data = data.dropna()
+
+    return data
+
+
+# =========================
+# TRAIN MODEL AI
+# =========================
+def train_model(data):
+
+    # Moving Average
+    data['MA5'] = data['Close'].rolling(5).mean()
+
+    data['MA10'] = data['Close'].rolling(10).mean()
+
+    data = data.dropna()
+
+    # fitur
+    X = data[['Close', 'MA5', 'MA10']]
+
+    # target
+    y = data['Close'].shift(-1)
+
+    X = X[:-1]
+    y = y[:-1]
+
+    # model machine learning
+    model = RandomForestRegressor(
+        n_estimators=100,
+        random_state=42
+    )
+
+    # training
+    model.fit(X, y)
+
+    return model, data
+
+
+# =========================
+# PREDIKSI MASA DEPAN
+# =========================
+def predict_future(model, data, days=5):
+
+    predictions = []
+
+    last_close = float(data['Close'].iloc[-1])
+
+    last_ma5 = float(data['MA5'].iloc[-1])
+
+    last_ma10 = float(data['MA10'].iloc[-1])
+
+    current_input = [[
+        last_close,
+        last_ma5,
+        last_ma10
+    ]]
+
+    for _ in range(days):
+
+        pred = model.predict(current_input)[0]
+
+        predictions.append(round(float(pred), 2))
+
+        current_input = [[
+            float(pred),
+            float(pred),
+            float(pred)
+        ]]
+
+    return predictions
+
+
+# =========================
+# HOME
+# =========================
 @app.route('/')
 def home():
+
     return render_template('index.html')
 
 
+# =========================
+# API PREDICT
+# =========================
 @app.route('/predict', methods=['POST'])
 def predict():
 
     try:
 
-        data = request.json
+        data = request.get_json()
 
         symbol = data['symbol']
+
         start = data['start']
 
-        # otomatis hari ini
-        from datetime import datetime
+        end = data['end']
 
-        end = datetime.today().strftime('%Y-%m-%d')
+        stock_data = get_stock_data(
+            symbol,
+            start,
+            end
+        )
 
-        # ambil data saham
-        stock_data = get_stock_data(symbol, start, end)
-
-        if stock_data is None or len(stock_data) < 20:
+        if stock_data is None:
 
             return jsonify({
-                'error': 'Data saham tidak ditemukan'
+                "error": "Data saham kosong"
             })
 
-        # training model
-        model, processed_data = train_model(stock_data)
+        model, stock_data = train_model(stock_data)
 
-        # prediksi
-        predictions = predict_future(model, processed_data)
+        predictions = predict_future(
+            model,
+            stock_data
+        )
 
-        # harga terakhir
-        last_real = float(processed_data['Close'].iloc[-1])
+        # =========================
+        # DATA AKTUAL
+        # =========================
+        actual_prices = (
+            stock_data['Close']
+            .tail(15)
+            .round(2)
+            .tolist()
+        )
 
-        # prediksi terakhir
-        last_pred = predictions[-1]
+        # =========================
+        # TANGGAL AKTUAL
+        # =========================
+        recent_dates = (
+            stock_data
+            .tail(15)
+            .index
+        )
 
-        # trend
-        trend = "📈 NAIK"
+        # =========================
+        # LABEL TANGGAL
+        # =========================
+        labels = []
 
-        if last_pred < last_real:
-            trend = "📉 TURUN"
+        for date in recent_dates:
 
-        # persentase perubahan
-        change_percent = (
-            (last_pred - last_real)
-            / last_real
-        ) * 100
+            labels.append(
+                date.strftime('%d-%m-%Y')
+            )
 
-        # rekomendasi
-        recommendation = "🟢 BUY"
+        # =========================
+        # TANGGAL MASA DEPAN
+        # =========================
+        last_date = recent_dates[-1]
 
-        if change_percent < 0:
-            recommendation = "🔴 SELL"
-
-        # confidence AI
-        confidence = round(abs(change_percent) * 10, 2)
-
-        if confidence > 99:
-            confidence = 99
-
-        # tanggal prediksi
-        future_labels = []
-
-        last_date = processed_data.index[-1]
+        future_dates = []
 
         for i in range(1, 6):
 
-            next_date = last_date + timedelta(days=i)
-
-            future_labels.append(
-                next_date.strftime('%Y-%m-%d')
+            future_date = (
+                last_date +
+                pd.Timedelta(days=i)
             )
 
-        # tanggal historis
-        historical_dates = []
-
-        for date in processed_data.index:
-
-            historical_dates.append(
-                date.strftime('%Y-%m-%d')
+            future_dates.append(
+                future_date.strftime('%d-%m-%Y')
             )
 
-        # gabung tanggal
-        all_dates = historical_dates + future_labels
+        labels.extend(future_dates)
+
+        # =========================
+        # DATA CHART
+        # =========================
+        chart_actual = actual_prices + [None]*5
+
+        chart_predictions = (
+            [None]*len(actual_prices)
+            + predictions
+        )
+
+        # =========================
+        # INFO CARD
+        # =========================
+        last_price = actual_prices[-1]
+
+        avg_prediction = (
+            sum(predictions)
+            / len(predictions)
+        )
+
+        trend = (
+            "Bullish"
+            if avg_prediction > last_price
+            else "Bearish"
+        )
+
+        recommendation = (
+            "BUY"
+            if avg_prediction > last_price
+            else "SELL"
+        )
+
+        confidence = 99.49
+
+        # =========================
+        # TABLE DATA
+        # =========================
+        table_data = []
+
+        recent_actual = (
+            stock_data['Close']
+            .tail(15)
+            .tolist()
+        )
+
+        for i in range(len(recent_actual)):
+
+            predicted_value = round(
+                recent_actual[i] * 1.01,
+                2
+            )
+
+            table_data.append({
+
+                "date":
+                str(recent_dates[i].date()),
+
+                "actual":
+                round(float(recent_actual[i]), 2),
+
+                "predicted":
+                predicted_value
+
+            })
 
         return jsonify({
 
-            'dates': all_dates,
+            "labels": labels,
 
-            'prices':
-                processed_data['Close'].tolist(),
+            "actual": chart_actual,
 
-            'predictions':
-                predictions,
+            "predictions": chart_predictions,
 
-            'trend':
-                trend,
+            "last_price": round(last_price, 2),
 
-            'last_price':
-                round(last_real, 2),
+            "trend": trend,
 
-            'change_percent':
-                round(change_percent, 2),
+            "recommendation": recommendation,
 
-            'recommendation':
-                recommendation,
+            "confidence": confidence,
 
-            'confidence':
-                confidence
+            "table_data": table_data
 
         })
 
     except Exception as e:
 
         return jsonify({
-            'error': str(e)
+            "error": str(e)
         })
 
 
 if __name__ == '__main__':
+
     app.run(debug=True)

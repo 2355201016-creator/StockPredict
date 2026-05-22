@@ -1,149 +1,261 @@
+// =========================
+// static/script.js
+// =========================
+
 let chartInstance = null;
 
 async function predict() {
 
-    const symbol = document.getElementById('symbol').value;
-
-    const start = document.getElementById('start').value;
-
-    if (!start) {
-
-        alert("Isi tanggal mulai!");
-        return;
-    }
-
-    document.getElementById('trend').innerText = "Loading...";
-
     try {
 
-        const response = await fetch('/predict', {
+        const symbol =
+            document.getElementById('symbol').value;
 
-            method: 'POST',
+        const start =
+            document.getElementById('start').value;
 
-            headers: {
-                'Content-Type': 'application/json'
-            },
+        const end =
+            document.getElementById('end').value;
 
-            body: JSON.stringify({
-                symbol,
-                start
-            })
+        if (!start || !end) {
 
-        });
+            alert("Isi tanggal terlebih dahulu!");
 
-        const data = await response.json();
-
-        console.log(data);
-
-        if (data.error) {
-
-            alert(data.error);
             return;
         }
 
-        // tampilkan data
-        document.getElementById('lastPrice').innerText =
-    "Rp " +
-    Number(data.last_price)
-    .toLocaleString('id-ID', {
-        minimumFractionDigits: 2
-    });
+        const response =
+            await fetch('/predict', {
 
-        document.getElementById('trend').innerText =
-            data.trend;
+                method: 'POST',
 
-        document.getElementById('recommendation').innerText =
-            data.recommendation;
+                headers: {
+                    'Content-Type': 'application/json'
+                },
 
-        document.getElementById('confidence').innerText =
-            data.confidence + "%";
+                body: JSON.stringify({
+                    symbol,
+                    start,
+                    end
+                })
 
-        // chart
-        const ctx = document
-            .getElementById('chart')
-            .getContext('2d');
+            });
 
-        if (chartInstance) {
+        const result =
+            await response.json();
+
+        console.log(result);
+
+        if(result.error){
+
+            alert(result.error);
+
+            return;
+        }
+
+        // =========================
+        // INFO CARD
+        // =========================
+        document.getElementById('lastPrice')
+            .innerHTML =
+            `Rp ${Number(result.last_price)
+                .toLocaleString('id-ID')}`;
+
+        document.getElementById('trend')
+            .innerHTML =
+            result.trend;
+
+        document.getElementById('recommendation')
+            .innerHTML =
+            result.recommendation;
+
+        document.getElementById('confidence')
+            .innerHTML =
+            result.confidence + '%';
+
+        // =========================
+        // TABLE
+        // =========================
+        const tableBody =
+            document.getElementById(
+                'predictionTableBody'
+            );
+
+        tableBody.innerHTML = '';
+
+        result.table_data.forEach(item => {
+
+            tableBody.innerHTML += `
+
+                <tr>
+
+                    <td>
+                        ${item.date}
+                    </td>
+
+                    <td class="actual-price">
+                        Rp ${Number(item.actual)
+                            .toLocaleString('id-ID')}
+                    </td>
+
+                    <td class="predicted-price">
+                        Rp ${Number(item.predicted)
+                            .toLocaleString('id-ID')}
+                    </td>
+
+                </tr>
+
+            `;
+
+        });
+
+        // =========================
+        // DESTROY CHART
+        // =========================
+        if(chartInstance){
+
             chartInstance.destroy();
         }
 
-        chartInstance = new Chart(ctx, {
+        // =========================
+        // CHART
+        // =========================
+        const ctx =
+            document.getElementById('chart');
 
-            type: 'line',
+        chartInstance =
+            new Chart(ctx, {
 
-            data: {
+                type: 'line',
 
-                labels: data.dates,
+                data: {
 
-                datasets: [
+                    labels: result.labels,
 
-                    {
-                        label: 'Harga Historis',
+                    datasets: [
 
-                        data: data.prices,
+                        {
+                            label: 'Harga Aktual',
 
-                        borderColor: '#2563eb',
+                            data: result.actual,
 
-                        backgroundColor: 'rgba(37,99,235,0.2)',
+                            borderColor: '#3b82f6',
 
-                        borderWidth: 3,
+                            backgroundColor:
+                                'rgba(59,130,246,0.15)',
 
-                        fill: true,
+                            borderWidth: 3,
 
-                        tension: 0.4
+                            tension: 0.4,
+
+                            fill: true,
+
+                            pointRadius: 4,
+
+                            pointHoverRadius: 6
+                        },
+
+                        {
+                            label: 'Prediksi AI',
+
+                            data: result.predictions,
+
+                            borderColor: '#a855f7',
+
+                            backgroundColor:
+                                'rgba(168,85,247,0.15)',
+
+                            borderWidth: 3,
+
+                            tension: 0.4,
+
+                            fill: true,
+
+                            pointRadius: 4,
+
+                            pointHoverRadius: 6
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    interaction: {
+
+                        mode: 'index',
+
+                        intersect: false
                     },
 
-                    {
-                        label: 'Prediksi AI',
+                    plugins: {
 
-                        data: [
+                        legend: {
 
-                            ...Array(data.prices.length - 1).fill(null),
+                            labels: {
+                                color: 'white',
+                                font: {
+                                    size: 14
+                                }
+                            }
 
-                            data.prices[data.prices.length - 1],
+                        }
 
-                            ...data.predictions
+                    },
 
-                        ],
+                    scales: {
 
-                        borderColor: '#ef4444',
+                        x: {
 
-                        borderDash: [6,6],
+                            ticks: {
 
-                        borderWidth: 3,
+                                color: 'white',
 
-                        tension: 0.4
-                    }
+                                maxRotation: 45,
 
-                ]
+                                minRotation: 45
+                            },
 
-            },
+                            grid: {
 
-            options: {
+                                color:
+                                'rgba(255,255,255,0.05)'
+                            }
 
-                responsive: true,
+                        },
 
-                scales: {
+                        y: {
 
-                    x: {
+                            ticks: {
 
-                        ticks: {
-                            maxTicksLimit: 10
+                                color: 'white'
+                            },
+
+                            grid: {
+
+                                color:
+                                'rgba(255,255,255,0.05)'
+                            }
+
                         }
 
                     }
 
                 }
 
-            }
+            });
 
-        });
+    } catch (error) {
 
-    } catch (err) {
+        console.log(error);
 
-        console.log(err);
+        alert("Terjadi error!");
 
-        alert("Server Error!");
     }
 
 }
