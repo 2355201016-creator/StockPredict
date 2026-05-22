@@ -45,6 +45,10 @@ def train_model(data):
 
     data = data.dropna()
 
+    # VALIDASI DATA
+    if len(data) < 10:
+        return None, None
+
     # fitur
     X = data[['Close', 'MA5', 'MA10']]
 
@@ -54,13 +58,17 @@ def train_model(data):
     X = X[:-1]
     y = y[:-1]
 
-    # model machine learning
+    # VALIDASI LAGI
+    if len(X) == 0 or len(y) == 0:
+        return None, None
+
+    # MODEL AI
     model = RandomForestRegressor(
         n_estimators=100,
         random_state=42
     )
 
-    # training
+    # TRAINING
     model.fit(X, y)
 
     return model, data
@@ -89,7 +97,9 @@ def predict_future(model, data, days=5):
 
         pred = model.predict(current_input)[0]
 
-        predictions.append(round(float(pred), 2))
+        predictions.append(
+            round(float(pred), 2)
+        )
 
         current_input = [[
             float(pred),
@@ -131,14 +141,34 @@ def predict():
             end
         )
 
+        # VALIDASI DATA KOSONG
         if stock_data is None:
 
             return jsonify({
-                "error": "Data saham kosong"
+                "error":
+                "Data saham tidak ditemukan."
             })
 
+        # VALIDASI DATA TERLALU SEDIKIT
+        if len(stock_data) < 20:
+
+            return jsonify({
+                "error":
+                "Tanggal terlalu pendek. Gunakan minimal 1 bulan data."
+            })
+
+        # TRAIN MODEL
         model, stock_data = train_model(stock_data)
 
+        # VALIDASI MODEL
+        if model is None:
+
+            return jsonify({
+                "error":
+                "Data tidak cukup untuk analisis AI."
+            })
+
+        # PREDIKSI
         predictions = predict_future(
             model,
             stock_data
@@ -175,7 +205,7 @@ def predict():
             )
 
         # =========================
-        # TANGGAL MASA DEPAN
+        # TANGGAL PREDIKSI
         # =========================
         last_date = recent_dates[-1]
 
@@ -197,7 +227,10 @@ def predict():
         # =========================
         # DATA CHART
         # =========================
-        chart_actual = actual_prices + [None]*5
+        chart_actual = (
+            actual_prices +
+            [None]*5
+        )
 
         chart_predictions = (
             [None]*len(actual_prices)
@@ -252,13 +285,19 @@ def predict():
                 str(recent_dates[i].date()),
 
                 "actual":
-                round(float(recent_actual[i]), 2),
+                round(
+                    float(recent_actual[i]),
+                    2
+                ),
 
                 "predicted":
                 predicted_value
 
             })
 
+        # =========================
+        # RESPONSE JSON
+        # =========================
         return jsonify({
 
             "labels": labels,
@@ -267,7 +306,10 @@ def predict():
 
             "predictions": chart_predictions,
 
-            "last_price": round(last_price, 2),
+            "last_price": round(
+                last_price,
+                2
+            ),
 
             "trend": trend,
 
